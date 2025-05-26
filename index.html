@@ -1,102 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>YouTube Vid Player</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>YouTube Vid Player</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
 
-    body {
-      background-color: black;
-      color: white;
-    }
+  <body>
+    <div class="fullFrame">
+      <form action="" id="idform">
+        <input type="text" id="id_input" placeholder="YouTube video id" />
+        <input type="submit" value="watch" />
+      </form>
 
-    .fullFrame {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
-    }
-
-    form {
-      width: 100%;
-      max-width: 600px;
-      margin-bottom: 20px;
-    }
-
-    input[type="text"],
-    input[type="submit"] {
-      width: 100%;
-      padding: 12px;
-      margin-top: 10px;
-      border: none;
-      border-radius: 5px;
-      font-size: 16px;
-    }
-
-    input[type="text"] {
-      background-color: #222;
-      color: white;
-    }
-
-    input[type="submit"] {
-      background-color: #e97d40;
-      color: white;
-      cursor: pointer;
-      transition: background 0.3s ease;
-    }
-
-    input[type="submit"]:hover {
-      background-color: #ff944d;
-    }
-
-    #holder iframe {
-      width: 100%;
-      max-width: 800px;
-      height: 450px;
-      margin-top: 20px;
-      border: none;
-      border-radius: 8px;
-    }
-  </style>
-</head>
-<body>
-  <div class="fullFrame">
-    <form id="idform">
-      <input type="text" id="id_input" placeholder="YouTube video ID (e.g. dQw4w9WgXcQ)" required />
-      <input type="submit" value="Watch" />
-    </form>
-
-    <div id="holder"></div>
-  </div>
-
-  <script>
-    const container = document.querySelector("#holder");
-    const form = document.querySelector("#idform");
-    const idInput = document.querySelector("#id_input");
-
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const videoId = idInput.value.trim();
-
-      if (videoId) {
-        container.innerHTML = `
-          <iframe 
-            src="https://www.youtube.com/embed/${videoId}" 
-            frameborder="0" 
-            allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" 
-            allowfullscreen>
-          </iframe>
-        `;
-      }
-    });
-  </script>
-</body>
+      <div id="holder"></div>
+    </div>
+    <script src="app.js"></script>
+  </body>
 </html>
