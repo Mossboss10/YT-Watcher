@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Harrison's Video Watcher</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+      color: white;
+      margin: 0;
+      padding: 1rem;
+    }
+
+    .funk-mode {
+      background: linear-gradient(145deg, #000000, #151515);
+      color: #e97d40;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    #player {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+
+    #videoInput {
+      width: 100%;
+      padding: 0.8rem;
+      margin-bottom: 1rem;
+      border-radius: 12px;
+      border: none;
+      outline: none;
+      font-size: 1rem;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+
+    button {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 0.75rem 1.5rem;
+      border-radius: 20px;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    button:hover {
+      background: rgba(233, 125, 64, 0.2);
+      color: #e97d40;
+    }
+
+    #historyList {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      padding-top: 1rem;
+    }
+
+    .history-item {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.2s;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .history-item:hover {
+      transform: scale(1.03);
+    }
+
+    .history-item img {
+      width: 100%;
+      display: block;
+    }
+
+    .history-title {
+      padding: 0.5rem;
+      font-size: 0.9rem;
+      text-align: center;
+    }
+
+    @media (max-width: 600px) {
+      #player iframe {
+        width: 100% !important;
+        height: auto !important;
+        aspect-ratio: 16 / 9;
+      }
+
+      .buttons {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Harrison's Video Watcher</h1>
+
+  <div id="player"></div>
+
+  <input type="text" id="videoInput" placeholder="Paste YouTube link or ID">
+
+  <div class="buttons">
+    <button onclick="loadVideo()">Watch</button>
+    <button onclick="toggleFunkMode()">Funk Mode</button>
+    <button onclick="clearHistory()">Clear History</button>
+  </div>
+
+  <h2>Watch History</h2>
+  <div id="historyList"></div>
+
+  <script>
+    let player;
+    let funkMode = false;
+
+    const tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.head.appendChild(tag);
+
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player('player', {
+        height: '390',
+        width: '640',
+        videoId: '',
+      });
+    }
+
+    function extractVideoId(input) {
+      const regex = /(?:https?:\/\/)?(?:www\.)?youtu(?:be\.com\/watch\?v=|\.be\/)([^\s&]+)/;
+      const match = input.match(regex);
+      return match ? match[1] : input;
+    }
+
+    function loadVideo() {
+      const input = document.getElementById("videoInput").value;
+      const videoId = extractVideoId(input);
+      if (!videoId) return;
+
+      player.loadVideoById(videoId);
+      fetchVideoTitle(videoId).then(title => {
+        addToHistory(videoId, title);
+      });
+
+      if (videoId === "FUNKYID123") {
+        toggleFunkMode(true);
+      }
+    }
+
+    function toggleFunkMode(forceOn = false) {
+      funkMode = forceOn || !funkMode;
+      document.body.classList.toggle('funk-mode', funkMode);
+    }
+
+    function fetchVideoTitle(videoId) {
+      return fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${videoId}`)
+        .then(res => res.json())
+        .then(data => data.title || "Unknown Title")
+        .catch(() => "Unknown Title");
+    }
+
+    function addToHistory(videoId, title) {
+      let history = JSON.parse(localStorage.getItem('ytHistory')) || [];
+      history = history.filter(v => v.id !== videoId);
+      history.unshift({ id: videoId, title });
+      localStorage.setItem('ytHistory', JSON.stringify(history));
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const container = document.getElementById("historyList");
+      container.innerHTML = '';
+      const history = JSON.parse(localStorage.getItem('ytHistory')) || [];
+
+      history.forEach(video => {
+        const item = document.createElement('div');
+        item.className = 'history-item';
+        item.onclick = () => {
+          player.loadVideoById(video.id);
+        };
+
+        const thumb = document.createElement('img');
+        thumb.src = `https://img.youtube.com/vi/${video.id}/hqdefault.jpg`;
+
+        const title = document.createElement('div');
+        title.className = 'history-title';
+        title.innerText = video.title;
+
+        item.appendChild(thumb);
+        item.appendChild(title);
+        container.appendChild(item);
+      });
+    }
+
+    function clearHistory() {
+      localStorage.removeItem('ytHistory');
+      renderHistory();
+    }
+
+    window.onload = renderHistory;
+  </script>
+</body>
+</html>
